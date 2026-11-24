@@ -32,3 +32,13 @@ A protagonista se perdeu e procura pistas para encontrar o caminho de volta para
 **Versão experimental:** os desenhos e cenários são provisórios. Não há salvamento nem arte final, e ainda precisamos testar no Godot instalado no PC.
 
 Este é um jogo original que usa ideias comuns de RPGs com combate por turnos e esquiva. Não reutiliza assets de outros jogos.
+
+## Versão experimental 0.3 — melhorias visuais e física
+
+- Agora existem **cinco cenários distintos**, com ruas, praça, peixaria, viela e terreno baldio.
+- A protagonista usa **WASD ou setas em quatro direções**, com sprites para frente, costas e lados.
+- A movimentação usa **CharacterBody2D** e obstáculos **StaticBody2D**: prédios, bancos e entulho têm colisões.
+- Mingau agora é um **sprite pixel art PNG**, menor no mapa e ampliado somente no combate.
+- Dona Maria continua sentada na praça, alimentando os pombos; não há missão na casa dela.
+
+**Aviso:** versão experimental ainda não executada no Godot neste ambiente. Use um download novo do projeto e importe `project.godot`. Se aparecer erro ao rodar, mande uma captura da aba Erros do Godot.
