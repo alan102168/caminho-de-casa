@@ -1,4 +1,4 @@
-# Caminho de Casa 🇧🇷 — Protótipo 0.4
+# Caminho de Casa 🇧🇷 — Protótipo 0.5
 
 RPG 2D brasileiro sobre uma garota perdida que tenta voltar para casa. A primeira missão é ajudar Dona Maria, sentada na praça dando comida aos pombos, a resgatar Mingau e seus três filhotes.
 
@@ -54,3 +54,14 @@ RPG 2D brasileiro sobre uma garota perdida que tenta voltar para casa. A primeir
 Nesta revisão foram corrigidos problemas de transição, colocada uma entrada interativa na peixaria, criada física por colisões e refeitos os recursos visuais na mesma paleta e resolução. **Ainda não consegui executar o Godot neste ambiente**; portanto, não estou afirmando que está livre de bugs. O roteiro de testes está em `docs/TESTES.md`. Se aparecer um erro, envie a primeira linha vermelha do painel de erros do Godot.
 
 O projeto usa mecânicas gerais de RPG com escolha e esquiva, mas seus personagens, história e arte devem ser originais.
+
+## Atualização visual 0.5 — retrô brasileiro
+
+- Os cinco mapas foram redesenhados com **grandes áreas de cor sólida**, estilo RPG retrô minimalista.
+- Removidos os pontinhos e texturas aleatórias que poluíam as ruas, a praça e o terreno.
+- Vegetação apenas em grupos definidos, sem espalhar pixels verdes pelo chão.
+- Calçadas, asfalto, muros, casas e portas mais legíveis, com contornos de alto contraste.
+- Interface do mapa e da batalha simplificada, preservando os sistemas e as falas.
+- Ambientação continua brasileira e todos os gráficos são próprios; nenhuma imagem de Undertale foi copiada.
+
+**Teste importante:** baixe um ZIP novo, extraia em pasta nova e reimporte `project.godot`. Esta revisão não foi executada no editor Godot neste ambiente.

@@ -1,4 +1,4 @@
-# Teste rápido do protótipo 0.4 (para iniciantes)
+# Teste rápido do protótipo 0.5 (para iniciantes)
 
 Não é necessário mexer no código. Abra o jogo no Godot 4 e pressione **F5**.
 
@@ -24,3 +24,13 @@ Não é necessário mexer no código. Abra o jogo no Godot 4 e pressione **F5**.
 - Não altere os arquivos manualmente: envie o erro para corrigirmos a versão do GitHub.
 
 **Observação:** esse roteiro é um teste manual *a realizar*, não uma declaração de que todas as etapas foram aprovadas.
+
+
+## Verificação visual da 0.5
+
+- Asfalto da rua sem pontilhado verde ou textura aleatória.
+- Praça com piso liso, bancos e plantas somente em grupos.
+- Peixaria com balcão e entrada reconhecível.
+- Viela sem ruído verde cobrindo as casas.
+- Terreno com muro e entulho legíveis, Mingau pequeno no mapa.
+- Verificar se o novo desenho não atrapalhou a colisão ou a proximidade necessária para interação.

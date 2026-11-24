@@ -1,12 +1,12 @@
 extends Node2D
 
-# Caminho de Casa - Protótipo 0.4
+# Caminho de Casa - Protótipo 0.5
 # Todo o protótipo é desenhado e controlado por este script.
 const AREA = Rect2(278, 325, 404, 114)
-const COR_TEXTO = Color("fff3df")
-const COR_FUNDO = Color("342733")
-const COR_BORDA = Color("e6c3a1")
-const COR_SELECAO = Color("ffcd68")
+const COR_TEXTO = Color("f2e3c6")
+const COR_FUNDO = Color("302e3e")
+const COR_BORDA = Color("d2b99a")
+const COR_SELECAO = Color("f1bf79")
 const COR_VERDE = Color("9fe0ae")
 
 
@@ -467,19 +467,20 @@ func objetivo() -> String:
 	return "Objetivo: procure a peixaria na parte alta da rua."
 
 func desenhar_mundo() -> void:
+	# Fundos redesenhados com blocos maiores e sem texturas de pontos aleatórios.
 	draw_texture_rect(fotos[sala], Rect2(0, 0, 960, 540), false)
 	if sala == "rua":
-		retrato(visitante, POS_VISITANTE, Vector2(60, 91))
+		retrato(visitante, POS_VISITANTE, Vector2(48, 74))
 		if posicao.distance_to(POS_VISITANTE) < 100.0:
 			escrever("E: conversar", 695, 286, 16, COR_SELECAO)
 	if sala == "praca":
 		# Dona Maria sentada no banco da praça; pombos se movimentam perto da comida.
-		retrato(maria, Vector2(489, 285), Vector2(53, 59))
+		retrato(maria, Vector2(489, 285), Vector2(47, 55))
 		for i in range(4):
 			var p = Vector2(355 + i * 66, 384 + int(sin(tempo_visual * 2.5 + i * 3) * 4))
-			retrato(pombo, p, Vector2(34, 24))
+			retrato(pombo, p, Vector2(27, 21))
 	elif sala == "peixaria":
-		retrato(peixeiro, POS_PEIXEIRO, Vector2(52, 64))
+		retrato(peixeiro, POS_PEIXEIRO, Vector2(48, 64))
 	elif sala == "terreno" and not resgatou and mingau_encontrado:
 		# Gato pequeno e parcialmente escondido: o jogador precisa chegar até ele.
 		retrato(mingau, POS_MINGAU, Vector2(51, 37))
@@ -505,16 +506,17 @@ func desenhar_mundo() -> void:
 		escrever("E: entrar na peixaria", 370, 302, 17, COR_SELECAO)
 	if sala == "peixaria":
 		escrever("SAÍDA", 429, 453, 18, COR_SELECAO)
-	caixa(Rect2(12, 8, 936, 78), Color("3b2a35"), Color("ffe1ab"))
-	escrever(salas[sala]["nome"].to_upper(), 26, 36, 23, COR_SELECAO)
-	escrever(objetivo(), 26, 65, 16)
-	escrever("PEIXE: " + ("1" if peixe else "0"), 790, 35, 18, COR_SELECAO)
-	caixa(Rect2(15, 484, 930, 46), Color("3b2a35"), Color("ffe1ab"))
-	escrever(aviso, 30, 514, 17)
+	# UI enxuta: menos caixas, deixando o mapa visível.
+	caixa(Rect2(12, 8, 936, 67), Color("302e3e"), Color("bca68b"))
+	escrever(salas[sala]["nome"].to_upper(), 26, 34, 22, COR_SELECAO)
+	escrever(objetivo(), 26, 61, 16)
+	escrever("PEIXE: " + ("1" if peixe else "0"), 804, 33, 16, COR_SELECAO)
+	caixa(Rect2(15, 487, 930, 41), Color("302e3e"), Color("bca68b"))
+	escrever(aviso, 30, 512, 17)
 
 func desenhar_dialogo() -> void:
 	draw_rect(Rect2(0, 0, 960, 540), Color(0, 0, 0, 0.32))
-	caixa(Rect2(44, 358, 872, 160), Color("2e222f"), Color("f3d3aa"))
+	caixa(Rect2(44, 358, 872, 160), Color("302e3e"), Color("e2cfad"))
 	var texto_atual = falas[mini(fala_indice, falas.size() - 1)]
 	var linhas = quebrar(texto_atual, 70)
 	for i in range(mini(3, linhas.size())):
@@ -536,17 +538,18 @@ func quebrar(frase: String, limite: int) -> Array[String]:
 
 func desenhar_batalha() -> void:
 	draw_texture_rect(fotos["terreno"], Rect2(0, 0, 960, 540), false)
-	draw_rect(Rect2(0, 290, 960, 250), Color("423740"))
+	# Batalha com composição própria: sprite em destaque e interface retro limpa.
+	draw_rect(Rect2(0, 290, 960, 250), Color("302e3e"))
 	retrato(mingau, Vector2(480, 151), Vector2(184, 137))
 	if modo == "dialogo" and ao_terminar == "resgate" and fala_indice >= 1:
 		retrato(filhotes, Vector2(618, 203), Vector2(126, 39))
 	escrever("MINGAU", 39, 43, 26, COR_SELECAO)
 	escrever("Confiança: " + str(confianca) + "/2", 719, 43, 19, COR_VERDE)
-	caixa(Rect2(43, 232, 874, 63))
+	caixa(Rect2(43, 232, 874, 63), Color("302e3e"), Color("e2cfad"))
 	var linhas = quebrar(mensagem, 86)
 	for i in range(mini(linhas.size(), 2)):
 		escrever(linhas[i], 63, 261 + 24 * i, 19)
-	caixa(AREA, Color("2b2132"), Color("dabfcc"))
+	caixa(AREA, Color("252633"), Color("e2cfad"))
 	if fase == "esquiva":
 		for bola in bolinhas:
 			draw_circle(bola["pos"], 8, Color("eac48b"))
@@ -561,10 +564,10 @@ func desenhar_batalha() -> void:
 	for i in range(4):
 		var x = 24.0 + i * 236.0
 		var marcado = i == selecao
-		var cor_borda = COR_SELECAO if marcado else Color("cdb4b8")
+		var cor_borda = COR_SELECAO if marcado else Color("c6b3a1")
 		if i == 3 and confianca >= 2:
 			cor_borda = COR_VERDE
-		caixa(Rect2(x, 482, 216, 46), Color("63414c") if marcado else Color("40313d"), cor_borda)
+		caixa(Rect2(x, 482, 216, 46), Color("564255") if marcado else Color("302e3e"), cor_borda)
 		escrever(botoes[i], x + 21, 510, 21, COR_SELECAO if marcado else COR_TEXTO)
 
 func desenhar_coracao() -> void:
