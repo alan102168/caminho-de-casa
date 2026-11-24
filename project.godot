@@ -1,3 +1,5 @@
+config_version=5
+
 [application]
 config/name="Caminho de Casa - Protótipo"
 run/main_scene="res://scenes/main.tscn"
