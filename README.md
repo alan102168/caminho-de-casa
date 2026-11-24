@@ -2,7 +2,7 @@
 
 Protótipo de RPG 2D brasileiro feito no **Godot 4**.
 
-A protagonista se perdeu e procura pistas para encontrar o caminho de volta para casa. Na primeira missão, Dona Maria pede ajuda para resgatar seu gato Mingau de um terreno do bairro. O gato precisa confiar nela antes de ser resgatado.
+A protagonista se perdeu e procura pistas para encontrar o caminho de volta para casa. Na primeira missão, a garota encontra Dona Maria **sentada num banco da praça, alimentando os pombos**. Ela pede ajuda para resgatar seu gato Mingau de um terreno do bairro. O gato precisa confiar nela antes de ser resgatado.
 
 ## Como jogar no Windows
 
@@ -22,7 +22,7 @@ A protagonista se perdeu e procura pistas para encontrar o caminho de volta para
 
 ## O que há no protótipo
 
-- Exploração de um pequeno bairro brasileiro.
+- Exploração de áreas conectadas de um bairro brasileiro, inclusive a praça com Dona Maria.
 - Conversa com Dona Maria e com o peixeiro.
 - Peixe como item para conquistar a confiança do Mingau.
 - Batalha de esquiva com comandos **AGIR**, **ITEM**, **CHAMAR** e **RESGATAR**.
