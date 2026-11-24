@@ -22,7 +22,7 @@ const POS_MARIA = Vector2(415, 340)
 const POS_PEIXEIRO = Vector2(187, 343)
 const POS_MINGAU = Vector2(789, 355)
 var modo = "mundo"
-var falas: Array[String] = []
+var falas: Array = []
 var fala_indice = 0
 var ao_terminar = ""
 var missao = false
@@ -142,7 +142,7 @@ func interagir() -> void:
 	else:
 		aviso = "Não tem ninguém por perto. Explore o bairro!"
 
-func dialogo(textos: Array[String], acao: String) -> void:
+func dialogo(textos: Array, acao: String) -> void:
 	falas = textos
 	fala_indice = 0
 	ao_terminar = acao
