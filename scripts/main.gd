@@ -21,6 +21,8 @@ var maria: Texture2D = preload("res://assets/pixel/dona_maria.svg")
 var peixeiro: Texture2D = preload("res://assets/pixel/seu_ze.svg")
 var mingau: Texture2D = preload("res://assets/pixel/mingau.svg")
 var pombo: Texture2D = preload("res://assets/pixel/pombo.svg")
+# Personagem novo enviado pelo criador do jogo (sprite PNG transparente).
+var visitante: Texture2D = preload("res://assets/pixel/visitante.png")
 var filhotes: Texture2D = preload("res://assets/pixel/filhotes.svg")
 
 # Cada cena é uma área separada. Use as saídas nas bordas para viajar.
@@ -38,6 +40,7 @@ const ENTRADA_PEIXARIA = Vector2(476, 279)
 const POS_MARIA = Vector2(490, 290)
 const POS_PEIXEIRO = Vector2(479, 314)
 const POS_MINGAU = Vector2(826, 346)
+const POS_VISITANTE = Vector2(765, 355)
 var salas: Dictionary = {
 	"rua": {"nome": "Rua das Acácias", "esquerda": "praca", "direita": "viela", "cima": "peixaria"},
 	"praca": {"nome": "Praça da Figueira", "direita": "rua"},
@@ -261,6 +264,13 @@ func transicao_portas() -> void:
 
 
 func interagir() -> void:
+	if sala == "rua" and posicao.distance_to(POS_VISITANTE) < 91.0:
+		dialogo([
+			"Garota: Oi! Gostei da sua fantasia!",
+			"Visitante: Valeu! Hoje vai ter um encontro de cosplay por aqui.",
+			"Visitante: Tá procurando alguém? A Dona Maria costuma ficar na praça, à esquerda."
+		], "")
+		return
 	if sala == "rua" and posicao.distance_to(ENTRADA_PEIXARIA) < 86.0:
 		mudar_area("peixaria", Vector2(481, 421))
 		return
@@ -458,6 +468,10 @@ func objetivo() -> String:
 
 func desenhar_mundo() -> void:
 	draw_texture_rect(fotos[sala], Rect2(0, 0, 960, 540), false)
+	if sala == "rua":
+		retrato(visitante, POS_VISITANTE, Vector2(60, 91))
+		if posicao.distance_to(POS_VISITANTE) < 100.0:
+			escrever("E: conversar", 695, 286, 16, COR_SELECAO)
 	if sala == "praca":
 		# Dona Maria sentada no banco da praça; pombos se movimentam perto da comida.
 		retrato(maria, Vector2(489, 285), Vector2(53, 59))
