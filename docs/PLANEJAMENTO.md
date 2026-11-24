@@ -4,7 +4,7 @@
 A protagonista se perdeu no Brasil e procura o caminho de volta para casa. Explora bairros 2D, conversa com pessoas, investiga pistas e pode solucionar situações sem violência.
 
 ## Primeira missão — Mingau
-1. Dona Maria sabe por onde fica a casa, mas pede um favor.
+1. Dona Maria está sentada em um banco da praça, alimentando os pombos. Ela sabe o caminho para o bairro da garota, mas pede um favor.
 2. O jogador encontra Mingau em um terreno comum do bairro.
 3. Para conquistar confiança, precisa conseguir um peixe na peixaria.
 4. A batalha envolve escolhas e esquiva. Ao acalmar Mingau, pode usar RESGATAR.
