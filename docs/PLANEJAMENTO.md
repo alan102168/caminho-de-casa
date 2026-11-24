@@ -1,30 +1,35 @@
-# Planejamento do jogo
+# Planejamento — Caminho de Casa
 
-## Ideia central
-A protagonista se perdeu no Brasil e procura o caminho de volta para casa. Explora bairros 2D, conversa com pessoas, investiga pistas e pode solucionar situações sem violência.
+## Conceito
+- Uma garota perdida deve voltar para casa em um Brasil realista, sem outras dimensões.
+- Exploração em mapa 2D; jogadores conversam, ajudam moradores e recolhem pistas.
+- Caderninho registra informações úteis; no jogo completo será possível achar a casa por caminhos diferentes.
+- Combates inspirados em RPGs de turno e esquiva, privilegiando soluções pacíficas.
 
-## Primeira missão — Mingau
-1. Dona Maria está sentada em um banco da praça, alimentando os pombos. Ela sabe o caminho para o bairro da garota, mas pede um favor.
-2. O jogador encontra Mingau em um terreno comum do bairro.
-3. Para conquistar confiança, precisa conseguir um peixe na peixaria.
-4. A batalha envolve escolhas e esquiva. Ao acalmar Mingau, pode usar RESGATAR.
-5. Mingau protegia três filhotes. A garota resgata todos e os leva para Dona Maria.
-6. Dona Maria conta sobre o ônibus com faixa azul e alguém que procurava uma garota parecida.
+## Missão 1 — Cadê o Mingau?
+1. Dona Maria está **sentada num banco da praça, dando comida aos pombos**. Ela sabe algo sobre o caminho.
+2. Pede que a protagonista encontre Mingau no terreno baldio.
+3. O jogador atravessa o bairro e consegue um peixe com Seu Zé na peixaria.
+4. Mingau fica escondido entre caixotes; o jogador precisa se aproximar para encontrá-lo.
+5. A batalha utiliza AGIR, ITEM, CHAMAR e RESGATAR. **Não existe necessidade de machucar o gato**.
+6. É obrigatório oferecer o peixe antes de conquistar a confiança.
+7. O jogador descobre três filhotes escondidos com Mingau, e resgata os quatro.
+8. Dona Maria conta que o ônibus para perto da casa tem uma faixa azul e que alguém procurava uma garota parecida com a protagonista.
 
-## Futuro
-- Mapas interligados, pistas opcionais e caminho alternativo para quem investigar bem.
-- Arte pixel art original, músicas próprias, efeitos e animações.
-- Salvamento, acessibilidade e mais personagens com humor brasileiro.
+## Primeira área do protótipo
+Rua das Acácias ↔ Praça da Figueira
+Rua das Acácias → Peixaria do Zé (interação na porta, volta pela saída)
+Rua das Acácias ↔ Viela do Campinho ↔ Terreno baldio
 
-## Arte
-Os arquivos SVG em `assets/` são desenhos provisórios do protótipo, não a arte definitiva. A referência de combate discutida em conversa continua sendo o alvo para uma futura versão pixel art.
+## Direção artística da versão 0.4
+- Pixel art em **grade 320x180**, renderizada para viewport 960x540.
+- Tons quentes de terra, tijolos, paredes e vegetação brasileiras.
+- Personagens em sprites pequenos com mesma paleta e bordas discretas.
+- Mingau desenhado em pixel art próprio, pequeno na exploração e maior no combate.
+- UI simples com cores quentes e espaço de esquiva, sem copiar telas ou personagens de jogos existentes.
 
-## Ajustes da versão 0.3
-
-- Refazer a arte dos cinco mapas para uma exploração top-down mais legível.
-- Impedir atravessar casas, bancos, árvores, caixotes e entulho por colisões físicas.
-- Reduzir o gato no mapa para um sprite pequeno e fiel ao retrato pixel-art; ele deve ser encontrado no fundo do terreno, não aparecer gigante na entrada.
-- Mostrar a garota andando para os quatro lados, sem limitar a faixa horizontal da tela.
-- Garantir que Dona Maria esteja na praça alimentando pombos, nunca em sua casa.
-
-Os gráficos ainda são protótipos em pixel art e poderão ser refinados após teste no Godot.
+## Próximos marcos, somente depois de estabilizar
+- Mais frames de animação e profundidade/oclusão em frente e atrás de objetos.
+- Efeitos sonoros originais e música.
+- Salvamento e opções de acessibilidade.
+- Novas áreas e pistas sobre quem estava procurando a protagonista.

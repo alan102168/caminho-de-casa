@@ -1,44 +1,56 @@
-# Caminho de Casa 🇧🇷
+# Caminho de Casa 🇧🇷 — Protótipo 0.4
 
-Protótipo de RPG 2D brasileiro feito no **Godot 4**.
+RPG 2D brasileiro sobre uma garota perdida que tenta voltar para casa. A primeira missão é ajudar Dona Maria, sentada na praça dando comida aos pombos, a resgatar Mingau e seus três filhotes.
 
-A protagonista se perdeu e procura pistas para encontrar o caminho de volta para casa. Na primeira missão, a garota encontra Dona Maria **sentada num banco da praça, alimentando os pombos**. Ela pede ajuda para resgatar seu gato Mingau de um terreno do bairro. O gato precisa confiar nela antes de ser resgatado.
+**Motor:** Godot 4 (GDScript). **Estado:** versão experimental com arte provisória refinada e exploração em cinco áreas. O protótipo **ainda precisa ser testado no Godot instalado no PC**.
 
-## Como jogar no Windows
+## 📥 Como abrir no Windows (sem saber programar)
 
-1. Instale o Godot 4 em https://godotengine.org/download/.
-2. Na página do repositório, clique em **Code > Download ZIP**.
-3. Extraia o ZIP do repositório no seu PC.
-4. Abra o Godot, clique em **Importar** e selecione `project.godot`.
-5. Pressione **F5** para executar o protótipo.
+1. Na página do GitHub, clique em **Code → Download ZIP**.
+2. Extraia tudo em uma pasta nova (não misture com uma versão antiga).
+3. Instale ou abra o [Godot 4](https://godotengine.org/download/windows/).
+4. Clique em **Importar**, selecione o arquivo `project.godot` dentro da pasta extraída.
+5. Abra o projeto e pressione **F5**. Espere os recursos importarem na primeira execução.
 
-## Controles
+## 🎮 Controles
 
-- **WASD / setas**: andar pelo bairro; desviar na batalha.
-- **E**: interagir com personagens e objetos próximos.
-- **Enter / Espaço / Z**: avançar diálogo e selecionar ações.
-- **J**: abrir/fechar o caderninho.
-- **Esc**: fechar o caderno ou sair da batalha.
+| Tecla | Ação |
+|---|---|
+| **WASD / Setas** | Andar para cima, baixo, esquerda e direita; esquivar na batalha |
+| **E** | Conversar, examinar o gato, entrar na peixaria pela porta |
+| **Enter / Espaço / Z** | Avançar conversas e confirmar ação de combate |
+| **← / →** | Trocar de opção na batalha |
+| **J** | Abrir ou fechar caderninho de pistas |
+| **Esc** | Fechar o caderninho ou abandonar uma batalha |
 
-## O que há no protótipo
+## 🗺️ Como explorar
 
-- Exploração de áreas conectadas de um bairro brasileiro, inclusive a praça com Dona Maria.
-- Conversa com Dona Maria e com o peixeiro.
-- Peixe como item para conquistar a confiança do Mingau.
-- Batalha de esquiva com comandos **AGIR**, **ITEM**, **CHAMAR** e **RESGATAR**.
-- Revelação dos três filhotinhos e resgate sem machucar o gato.
-- Primeira pista no caderninho, com uma ponta de mistério.
+- **Rua das Acácias:** ponto inicial. Saída esquerda vai para a **Praça da Figueira**; direita vai para a **Viela do Campinho**.
+- **Praça:** Dona Maria está sentada no banco, perto dos pombos.
+- **Peixaria:** na Rua das Acácias, aproxime-se da entrada e aperte **E**. Lá dentro, converse com Seu Zé para conseguir um peixe. Para sair, desça pela parte de baixo.
+- **Viela:** pela direita da rua; segue para o terreno baldio.
+- **Terreno:** encontre Mingau perto dos caixotes, no fundo do terreno.
 
-**Versão experimental:** os desenhos e cenários são provisórios. Não há salvamento nem arte final, e ainda precisamos testar no Godot instalado no PC.
+## 🐈 Primeira missão
 
-Este é um jogo original que usa ideias comuns de RPGs com combate por turnos e esquiva. Não reutiliza assets de outros jogos.
+1. Fale com Dona Maria na praça.
+2. Volte à rua, entre na peixaria e pegue um peixe.
+3. Atravesse a viela, procure Mingau no terreno e interaja com **E**.
+4. Na batalha, use **ITEM** para oferecer o peixe; depois **AGIR** para tranquilizá-lo.
+5. Quando ele confiar, escolha **RESGATAR**. Ele estava protegendo três filhotes.
+6. Volte à praça, converse com Dona Maria e registre a pista no caderninho com **J**.
 
-## Versão experimental 0.3 — melhorias visuais e física
+## 🧩 Estrutura
 
-- Agora existem **cinco cenários distintos**, com ruas, praça, peixaria, viela e terreno baldio.
-- A protagonista usa **WASD ou setas em quatro direções**, com sprites para frente, costas e lados.
-- A movimentação usa **CharacterBody2D** e obstáculos **StaticBody2D**: prédios, bancos e entulho têm colisões.
-- Mingau agora é um **sprite pixel art PNG**, menor no mapa e ampliado somente no combate.
-- Dona Maria continua sentada na praça, alimentando os pombos; não há missão na casa dela.
+- `project.godot`: configuração do projeto Godot.
+- `scenes/main.tscn`: cena principal.
+- `scripts/main.gd`: exploração, colisões, interações, combate e missões.
+- `assets/pixel/maps/`: cinco cenários desenhados em baixa resolução.
+- `assets/pixel/`: personagens, Mingau e filhotes no mesmo estilo pixel art.
+- `docs/`: planejamento e testes manuais.
 
-**Aviso:** versão experimental ainda não executada no Godot neste ambiente. Use um download novo do projeto e importe `project.godot`. Se aparecer erro ao rodar, mande uma captura da aba Erros do Godot.
+## ⚠️ Qualidade e testes
+
+Nesta revisão foram corrigidos problemas de transição, colocada uma entrada interativa na peixaria, criada física por colisões e refeitos os recursos visuais na mesma paleta e resolução. **Ainda não consegui executar o Godot neste ambiente**; portanto, não estou afirmando que está livre de bugs. O roteiro de testes está em `docs/TESTES.md`. Se aparecer um erro, envie a primeira linha vermelha do painel de erros do Godot.
+
+O projeto usa mecânicas gerais de RPG com escolha e esquiva, mas seus personagens, história e arte devem ser originais.

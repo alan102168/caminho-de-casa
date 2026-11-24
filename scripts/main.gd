@@ -1,6 +1,6 @@
 extends Node2D
 
-# Caminho de Casa - Protótipo 0.1
+# Caminho de Casa - Protótipo 0.4
 # Todo o protótipo é desenhado e controlado por este script.
 const AREA = Rect2(278, 325, 404, 114)
 const COR_TEXTO = Color("fff3df")
@@ -9,15 +9,19 @@ const COR_BORDA = Color("e6c3a1")
 const COR_SELECAO = Color("ffcd68")
 const COR_VERDE = Color("9fe0ae")
 
-var bairro: Texture2D = preload("res://assets/bairro.svg")
-var terreno: Texture2D = preload("res://assets/terreno.svg")
-var garota: Texture2D = preload("res://assets/garota.svg")
-var garota_costas: Texture2D = preload("res://assets/garota_costas.svg")
-var garota_lado: Texture2D = preload("res://assets/garota_lado.svg")
-var maria: Texture2D = preload("res://assets/maria.svg")
-var peixeiro: Texture2D = preload("res://assets/peixeiro.svg")
-var mingau: Texture2D = preload("res://assets/mingau_pixel.png")
-var filhotes: Texture2D = preload("res://assets/filhotes.svg")
+
+# Sprites da mesma paleta, com pixels definidos em SVGs de baixa resolução.
+var garota: Texture2D = preload("res://assets/pixel/garota_frente_0.svg")
+var garota_passo: Texture2D = preload("res://assets/pixel/garota_frente_1.svg")
+var garota_costas: Texture2D = preload("res://assets/pixel/garota_costas_0.svg")
+var garota_costas_passo: Texture2D = preload("res://assets/pixel/garota_costas_1.svg")
+var garota_lado: Texture2D = preload("res://assets/pixel/garota_lado_0.svg")
+var garota_lado_passo: Texture2D = preload("res://assets/pixel/garota_lado_1.svg")
+var maria: Texture2D = preload("res://assets/pixel/dona_maria.svg")
+var peixeiro: Texture2D = preload("res://assets/pixel/seu_ze.svg")
+var mingau: Texture2D = preload("res://assets/pixel/mingau.svg")
+var pombo: Texture2D = preload("res://assets/pixel/pombo.svg")
+var filhotes: Texture2D = preload("res://assets/pixel/filhotes.svg")
 
 # Cada cena é uma área separada. Use as saídas nas bordas para viajar.
 var sala = "rua"
@@ -27,9 +31,13 @@ var passos = 0.0
 var personagem_fisico: CharacterBody2D
 var obstaculos: Array[StaticBody2D] = []
 var animacao_personagem = 0.0
+var tempo_visual = 0.0
+var atraso_saida = 0.0
+var mingau_encontrado = false
+const ENTRADA_PEIXARIA = Vector2(476, 279)
 const POS_MARIA = Vector2(490, 290)
 const POS_PEIXEIRO = Vector2(479, 314)
-const POS_MINGAU = Vector2(830, 346)
+const POS_MINGAU = Vector2(826, 346)
 var salas: Dictionary = {
 	"rua": {"nome": "Rua das Acácias", "esquerda": "praca", "direita": "viela", "cima": "peixaria"},
 	"praca": {"nome": "Praça da Figueira", "direita": "rua"},
@@ -38,11 +46,11 @@ var salas: Dictionary = {
 	"terreno": {"nome": "Terreno baldio", "esquerda": "viela"}
 }
 var fotos: Dictionary = {
-	"rua": preload("res://assets/maps/rua.svg"),
-	"praca": preload("res://assets/maps/praca.svg"),
-	"peixaria": preload("res://assets/maps/peixaria.svg"),
-	"viela": preload("res://assets/maps/viela.svg"),
-	"terreno": preload("res://assets/maps/terreno.svg")
+	"rua": preload("res://assets/pixel/maps/rua.svg"),
+	"praca": preload("res://assets/pixel/maps/praca.svg"),
+	"peixaria": preload("res://assets/pixel/maps/peixaria.svg"),
+	"viela": preload("res://assets/pixel/maps/viela.svg"),
+	"terreno": preload("res://assets/pixel/maps/terreno.svg")
 }
 var modo = "mundo"
 var falas: Array = []
@@ -112,15 +120,14 @@ func criar_colisoes_da_sala() -> void:
 			areas = [
 				Rect2(38, 113, 268, 144),
 				Rect2(639, 119, 265, 146),
-				Rect2(409, 278, 167, 72), # banco de Dona Maria
-				Rect2(349, 215, 30, 52), # tronco
-				Rect2(570, 207, 27, 54), # tronco
-				Rect2(428, 303, 104, 49) # chafariz
+				Rect2(389, 274, 191, 76), # banco de Dona Maria
+				Rect2(298, 229, 33, 65), # árvore esquerda
+				Rect2(605, 229, 33, 64) # árvore direita
 			]
 		"peixaria":
 			areas = [
-				Rect2(220, 110, 533, 172),
-				Rect2(363, 282, 236, 58), # balcão
+				Rect2(48, 106, 866, 159),
+				Rect2(345, 277, 271, 68), # balcão
 				Rect2(96, 148, 30, 77),
 				Rect2(834, 146, 33, 84)
 			]
@@ -134,10 +141,12 @@ func criar_colisoes_da_sala() -> void:
 		"terreno":
 			areas = [
 				Rect2(9, 87, 269, 164),
+				Rect2(274, 92, 424, 154), # muro ao fundo
 				Rect2(691, 84, 260, 164),
 				Rect2(60, 299, 194, 61), # entulho
 				Rect2(652, 258, 132, 43), # madeira empilhada
-				Rect2(742, 219, 144, 43)
+				Rect2(742, 219, 144, 43),
+				Rect2(755, 345, 123, 46) # caixotes perto de Mingau
 			]
 	for area in areas:
 		var corpo = StaticBody2D.new()
@@ -152,7 +161,8 @@ func criar_colisoes_da_sala() -> void:
 		add_child(corpo)
 		obstaculos.append(corpo)
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	atraso_saida = maxf(0.0, atraso_saida - delta)
 	if modo != "mundo" or caderno:
 		personagem_fisico.velocity = Vector2.ZERO
 		return
@@ -164,12 +174,13 @@ func _physics_process(_delta: float) -> void:
 	personagem_fisico.move_and_slide()
 	posicao = personagem_fisico.position
 	var sala_anterior = sala
-	transicao_portas()
+	if atraso_saida <= 0.0:
+		transicao_portas()
 	posicao.x = clampf(posicao.x, 36.0, 924.0)
 	posicao.y = clampf(posicao.y, 111.0, 464.0)
 	personagem_fisico.position = posicao
 	if sala != sala_anterior:
-		call_deferred("criar_colisoes_da_sala")
+		atraso_saida = 0.35
 
 func eixo() -> Vector2:
 	var direcao = Vector2.ZERO
@@ -184,6 +195,11 @@ func eixo() -> Vector2:
 	return direcao.normalized()
 
 func _process(delta: float) -> void:
+	tempo_visual += delta
+	if modo == "mundo" and sala == "terreno" and missao and not resgatou and not mingau_encontrado:
+		if posicao.distance_to(POS_MINGAU) < 176.0:
+			mingau_encontrado = true
+			aviso = "Miau! Tem um gato escondido atrás dos caixotes..."
 	if modo == "batalha" and fase == "esquiva":
 		processar_esquiva(delta)
 	queue_redraw()
@@ -220,26 +236,34 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			if codigo in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE, KEY_Z]:
 				comando()
 
+func mudar_area(proxima: String, entrada: Vector2) -> void:
+	sala = proxima
+	posicao = entrada
+	personagem_fisico.position = entrada
+	personagem_fisico.velocity = Vector2.ZERO
+	atraso_saida = 0.35
+	aviso = "Chegou em " + str(salas[sala]["nome"]) + ". Explore com WASD ou setas."
+	call_deferred("criar_colisoes_da_sala")
+
 func transicao_portas() -> void:
+	# A porta da loja fica na borda inferior; as outras saídas são laterais.
+	if sala == "peixaria" and posicao.y > 457.0 and posicao.x > 347.0 and posicao.x < 613.0:
+		mudar_area("rua", Vector2(476, 338))
+		return
+	# Só é possível sair pela calçada (não por dentro de paredes).
+	if posicao.y < 348.0 or posicao.y > 454.0:
+		return
 	var destinos: Dictionary = salas[sala]
-	if posicao.x < 37.0 and destinos.has("esquerda"):
-		sala = destinos["esquerda"]
-		posicao = Vector2(894, clampf(posicao.y, 376.0, 425.0))
-		aviso = "Você entrou em " + salas[sala]["nome"] + "."
-	elif posicao.x > 923.0 and destinos.has("direita"):
-		sala = destinos["direita"]
-		posicao = Vector2(65, clampf(posicao.y, 376.0, 425.0))
-		aviso = "Você entrou em " + salas[sala]["nome"] + "."
-	elif posicao.y < 112.0 and destinos.has("cima") and posicao.x > 340 and posicao.x < 620:
-		sala = destinos["cima"]
-		posicao = Vector2(480, 426)
-		aviso = "Você entrou em " + salas[sala]["nome"] + "."
-	elif posicao.y > 463.0 and destinos.has("baixo") and posicao.x > 340 and posicao.x < 620:
-		sala = destinos["baixo"]
-		posicao = Vector2(573, 298)
-		aviso = "Você entrou em " + salas[sala]["nome"] + "."
+	if posicao.x <= 37.0 and destinos.has("esquerda"):
+		mudar_area(str(destinos["esquerda"]), Vector2(895, posicao.y))
+	elif posicao.x >= 923.0 and destinos.has("direita"):
+		mudar_area(str(destinos["direita"]), Vector2(66, posicao.y))
+
 
 func interagir() -> void:
+	if sala == "rua" and posicao.distance_to(ENTRADA_PEIXARIA) < 86.0:
+		mudar_area("peixaria", Vector2(481, 421))
+		return
 	if sala == "praca" and posicao.distance_to(POS_MARIA) < 112.0:
 		if resgatou and not concluiu:
 			dialogo([
@@ -274,6 +298,7 @@ func interagir() -> void:
 				"Garota: Valeu! Vou procurar o Mingau."
 			], "peixe")
 	elif sala == "terreno" and posicao.distance_to(POS_MINGAU) < 93.0 and not resgatou:
+		mingau_encontrado = true
 		if not missao:
 			dialogo(["* Um gato laranja encara você e se afasta."], "")
 		else:
@@ -434,36 +459,38 @@ func objetivo() -> String:
 func desenhar_mundo() -> void:
 	draw_texture_rect(fotos[sala], Rect2(0, 0, 960, 540), false)
 	if sala == "praca":
-		# Dona Maria fica sentada no banco da praça, alimentando os pombos.
-		retrato(maria, Vector2(484, 291), Vector2(59, 69))
+		# Dona Maria sentada no banco da praça; pombos se movimentam perto da comida.
+		retrato(maria, Vector2(489, 285), Vector2(53, 59))
+		for i in range(4):
+			var p = Vector2(355 + i * 66, 384 + int(sin(tempo_visual * 2.5 + i * 3) * 4))
+			retrato(pombo, p, Vector2(34, 24))
 	elif sala == "peixaria":
-		retrato(peixeiro, POS_PEIXEIRO, Vector2(66, 89))
-	elif sala == "terreno" and not resgatou:
-		# Mingau fica escondido atrás da sucata, longe da entrada.
-		retrato(mingau, POS_MINGAU, Vector2(52, 49))
-		# O gato fica parcialmente oculto atrás de um caixote.
-		draw_rect(Rect2(812, 369, 73, 17), Color("786757"))
-		draw_rect(Rect2(805, 363, 86, 7), Color("b69b7b"))
+		retrato(peixeiro, POS_PEIXEIRO, Vector2(52, 64))
+	elif sala == "terreno" and not resgatou and mingau_encontrado:
+		# Gato pequeno e parcialmente escondido: o jogador precisa chegar até ele.
+		retrato(mingau, POS_MINGAU, Vector2(51, 37))
+		draw_rect(Rect2(809, 370, 76, 14), Color("796755"))
+		draw_rect(Rect2(805, 366, 82, 5), Color("b59b79"))
 	# A animação indica passos e uma pose diferente ao olhar para cada lado.
-	var em_movimento = personagem_fisico.velocity.length() > 0.1
-	var balanco = sin(animacao_personagem) * 2.0 if em_movimento else 0.0
-	var sprite = garota
+	var andando = personagem_fisico.velocity.length() > 0.1 and modo == "mundo"
+	var passo = andando and (int(animacao_personagem * 0.9) % 2 == 1)
+	var sprite: Texture2D = garota_passo if passo else garota
 	if direcao_olhar.y < -0.45:
-		sprite = garota_costas
-	elif direcao_olhar.x < -0.45 or direcao_olhar.x > 0.45:
-		sprite = garota_lado
+		sprite = garota_costas_passo if passo else garota_costas
+	elif absf(direcao_olhar.x) > 0.45:
+		sprite = garota_lado_passo if passo else garota_lado
 	var espelhar = direcao_olhar.x < -0.45
-	retrato_personagem(sprite, posicao + Vector2(0, balanco), Vector2(49, 71), espelhar)
+	retrato_personagem(sprite, posicao + Vector2(0, -7), Vector2(51, 76), espelhar)
 	# Portais discretos nas bordas do mapa.
 	var destinos: Dictionary = salas[sala]
 	if destinos.has("esquerda"):
-		draw_rect(Rect2(0, 250, 12, 70), Color("ffcf79"))
+		escrever("<", 8, 406, 26, COR_SELECAO)
 	if destinos.has("direita"):
-		draw_rect(Rect2(948, 250, 12, 70), Color("ffcf79"))
-	if destinos.has("cima"):
-		draw_rect(Rect2(390, 94, 180, 12), Color("ffcf79"))
-	if destinos.has("baixo"):
-		draw_rect(Rect2(390, 468, 180, 11), Color("ffcf79"))
+		escrever(">", 931, 406, 26, COR_SELECAO)
+	if sala == "rua" and posicao.distance_to(ENTRADA_PEIXARIA) < 135.0:
+		escrever("E: entrar na peixaria", 370, 302, 17, COR_SELECAO)
+	if sala == "peixaria":
+		escrever("SAÍDA", 429, 453, 18, COR_SELECAO)
 	caixa(Rect2(12, 8, 936, 78), Color("3b2a35"), Color("ffe1ab"))
 	escrever(salas[sala]["nome"].to_upper(), 26, 36, 23, COR_SELECAO)
 	escrever(objetivo(), 26, 65, 16)
@@ -494,15 +521,17 @@ func quebrar(frase: String, limite: int) -> Array[String]:
 	return linhas
 
 func desenhar_batalha() -> void:
-	draw_texture_rect(terreno, Rect2(0, 0, 960, 540), false)
-	draw_rect(Rect2(0, 266, 960, 274), Color("332834"))
-	retrato(mingau, Vector2(480, 142), Vector2(192, 175))
+	draw_texture_rect(fotos["terreno"], Rect2(0, 0, 960, 540), false)
+	draw_rect(Rect2(0, 290, 960, 250), Color("423740"))
+	retrato(mingau, Vector2(480, 151), Vector2(184, 137))
+	if modo == "dialogo" and ao_terminar == "resgate" and fala_indice >= 1:
+		retrato(filhotes, Vector2(618, 203), Vector2(126, 39))
 	escrever("MINGAU", 39, 43, 26, COR_SELECAO)
 	escrever("Confiança: " + str(confianca) + "/2", 719, 43, 19, COR_VERDE)
-	caixa(Rect2(34, 205, 892, 79))
+	caixa(Rect2(43, 232, 874, 63))
 	var linhas = quebrar(mensagem, 86)
 	for i in range(mini(linhas.size(), 2)):
-		escrever(linhas[i], 57, 243 + 24 * i, 19)
+		escrever(linhas[i], 63, 261 + 24 * i, 19)
 	caixa(AREA, Color("2b2132"), Color("dabfcc"))
 	if fase == "esquiva":
 		for bola in bolinhas:
