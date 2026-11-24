@@ -18,3 +18,13 @@ A protagonista se perdeu no Brasil e procura o caminho de volta para casa. Explo
 
 ## Arte
 Os arquivos SVG em `assets/` são desenhos provisórios do protótipo, não a arte definitiva. A referência de combate discutida em conversa continua sendo o alvo para uma futura versão pixel art.
+
+## Ajustes da versão 0.3
+
+- Refazer a arte dos cinco mapas para uma exploração top-down mais legível.
+- Impedir atravessar casas, bancos, árvores, caixotes e entulho por colisões físicas.
+- Reduzir o gato no mapa para um sprite pequeno e fiel ao retrato pixel-art; ele deve ser encontrado no fundo do terreno, não aparecer gigante na entrada.
+- Mostrar a garota andando para os quatro lados, sem limitar a faixa horizontal da tela.
+- Garantir que Dona Maria esteja na praça alimentando pombos, nunca em sua casa.
+
+Os gráficos ainda são protótipos em pixel art e poderão ser refinados após teste no Godot.
