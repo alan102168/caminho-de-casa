@@ -12,9 +12,11 @@ const COR_VERDE = Color("9fe0ae")
 var bairro: Texture2D = preload("res://assets/bairro.svg")
 var terreno: Texture2D = preload("res://assets/terreno.svg")
 var garota: Texture2D = preload("res://assets/garota.svg")
+var garota_costas: Texture2D = preload("res://assets/garota_costas.svg")
+var garota_lado: Texture2D = preload("res://assets/garota_lado.svg")
 var maria: Texture2D = preload("res://assets/maria.svg")
 var peixeiro: Texture2D = preload("res://assets/peixeiro.svg")
-var mingau: Texture2D = preload("res://assets/mingau.svg")
+var mingau: Texture2D = preload("res://assets/mingau_pixel.png")
 var filhotes: Texture2D = preload("res://assets/filhotes.svg")
 
 # Cada cena é uma área separada. Use as saídas nas bordas para viajar.
@@ -22,9 +24,12 @@ var sala = "rua"
 var posicao = Vector2(480, 392)
 var direcao_olhar = Vector2(0, 1)
 var passos = 0.0
+var personagem_fisico: CharacterBody2D
+var obstaculos: Array[StaticBody2D] = []
+var animacao_personagem = 0.0
 const POS_MARIA = Vector2(490, 290)
 const POS_PEIXEIRO = Vector2(479, 314)
-const POS_MINGAU = Vector2(760, 175)
+const POS_MINGAU = Vector2(830, 346)
 var salas: Dictionary = {
 	"rua": {"nome": "Rua das Acácias", "esquerda": "praca", "direita": "viela", "cima": "peixaria"},
 	"praca": {"nome": "Praça da Figueira", "direita": "rua"},
@@ -65,7 +70,106 @@ var sorteio = RandomNumberGenerator.new()
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	sorteio.randomize()
+	criar_corpo_jogadora()
+	criar_colisoes_da_sala()
 	queue_redraw()
+
+func criar_corpo_jogadora() -> void:
+	# A colisão é nos PÉS da garota, para funcionar como RPG visto de cima.
+	personagem_fisico = CharacterBody2D.new()
+	personagem_fisico.name = "JogadoraFisica"
+	personagem_fisico.collision_layer = 1
+	personagem_fisico.collision_mask = 1
+	personagem_fisico.motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+	add_child(personagem_fisico)
+	var formato = CircleShape2D.new()
+	formato.radius = 11.0
+	var colisao = CollisionShape2D.new()
+	colisao.name = "ColisaoDosPes"
+	colisao.shape = formato
+	colisao.position = Vector2(0, 25)
+	personagem_fisico.add_child(colisao)
+	personagem_fisico.position = posicao
+
+func criar_colisoes_da_sala() -> void:
+	# Paredes, casas, bancos e obstáculos. Não são decoração:
+	# a personagem não pode atravessá-los.
+	for corpo in obstaculos:
+		if is_instance_valid(corpo):
+			corpo.collision_layer = 0
+			corpo.queue_free()
+	obstaculos.clear()
+	var areas: Array[Rect2] = []
+	match sala:
+		"rua":
+			areas = [
+				Rect2(67, 110, 284, 150), # casa à esquerda
+				Rect2(357, 140, 175, 122), # construção ao centro
+				Rect2(611, 118, 288, 145), # casa à direita
+				Rect2(900, 94, 48, 139) # muro lateral
+			]
+		"praca":
+			areas = [
+				Rect2(38, 113, 268, 144),
+				Rect2(639, 119, 265, 146),
+				Rect2(409, 278, 167, 72), # banco de Dona Maria
+				Rect2(349, 215, 30, 52), # tronco
+				Rect2(570, 207, 27, 54), # tronco
+				Rect2(428, 303, 104, 49) # chafariz
+			]
+		"peixaria":
+			areas = [
+				Rect2(220, 110, 533, 172),
+				Rect2(363, 282, 236, 58), # balcão
+				Rect2(96, 148, 30, 77),
+				Rect2(834, 146, 33, 84)
+			]
+		"viela":
+			areas = [
+				Rect2(26, 107, 296, 220),
+				Rect2(332, 106, 313, 219),
+				Rect2(663, 95, 271, 230),
+				Rect2(726, 341, 114, 74)
+			]
+		"terreno":
+			areas = [
+				Rect2(9, 87, 269, 164),
+				Rect2(691, 84, 260, 164),
+				Rect2(60, 299, 194, 61), # entulho
+				Rect2(652, 258, 132, 43), # madeira empilhada
+				Rect2(742, 219, 144, 43)
+			]
+	for area in areas:
+		var corpo = StaticBody2D.new()
+		corpo.collision_layer = 1
+		corpo.collision_mask = 0
+		var forma = RectangleShape2D.new()
+		forma.size = area.size
+		var colisao = CollisionShape2D.new()
+		colisao.shape = forma
+		colisao.position = area.get_center()
+		corpo.add_child(colisao)
+		add_child(corpo)
+		obstaculos.append(corpo)
+
+func _physics_process(_delta: float) -> void:
+	if modo != "mundo" or caderno:
+		personagem_fisico.velocity = Vector2.ZERO
+		return
+	var direcao = eixo()
+	if direcao != Vector2.ZERO:
+		direcao_olhar = direcao
+		animacao_personagem += 0.22
+	personagem_fisico.velocity = direcao * 175.0
+	personagem_fisico.move_and_slide()
+	posicao = personagem_fisico.position
+	var sala_anterior = sala
+	transicao_portas()
+	posicao.x = clampf(posicao.x, 36.0, 924.0)
+	posicao.y = clampf(posicao.y, 111.0, 464.0)
+	personagem_fisico.position = posicao
+	if sala != sala_anterior:
+		call_deferred("criar_colisoes_da_sala")
 
 func eixo() -> Vector2:
 	var direcao = Vector2.ZERO
@@ -80,16 +184,7 @@ func eixo() -> Vector2:
 	return direcao.normalized()
 
 func _process(delta: float) -> void:
-	if modo == "mundo" and not caderno:
-		var d = eixo()
-		if d != Vector2.ZERO:
-			direcao_olhar = d
-			passos += delta * 9.0
-		posicao += d * 192.0 * delta
-		transicao_portas()
-		posicao.x = clampf(posicao.x, 36.0, 924.0)
-		posicao.y = clampf(posicao.y, 111.0, 464.0)
-	elif modo == "batalha" and fase == "esquiva":
+	if modo == "batalha" and fase == "esquiva":
 		processar_esquiva(delta)
 	queue_redraw()
 
@@ -129,11 +224,11 @@ func transicao_portas() -> void:
 	var destinos: Dictionary = salas[sala]
 	if posicao.x < 37.0 and destinos.has("esquerda"):
 		sala = destinos["esquerda"]
-		posicao = Vector2(894, posicao.y)
+		posicao = Vector2(894, clampf(posicao.y, 376.0, 425.0))
 		aviso = "Você entrou em " + salas[sala]["nome"] + "."
 	elif posicao.x > 923.0 and destinos.has("direita"):
 		sala = destinos["direita"]
-		posicao = Vector2(65, posicao.y)
+		posicao = Vector2(65, clampf(posicao.y, 376.0, 425.0))
 		aviso = "Você entrou em " + salas[sala]["nome"] + "."
 	elif posicao.y < 112.0 and destinos.has("cima") and posicao.x > 340 and posicao.x < 620:
 		sala = destinos["cima"]
@@ -141,7 +236,7 @@ func transicao_portas() -> void:
 		aviso = "Você entrou em " + salas[sala]["nome"] + "."
 	elif posicao.y > 463.0 and destinos.has("baixo") and posicao.x > 340 and posicao.x < 620:
 		sala = destinos["baixo"]
-		posicao = Vector2(480, 141)
+		posicao = Vector2(573, 298)
 		aviso = "Você entrou em " + salas[sala]["nome"] + "."
 
 func interagir() -> void:
@@ -306,6 +401,15 @@ func caixa(area: Rect2, fundo: Color = COR_FUNDO, borda: Color = COR_BORDA) -> v
 func retrato(tex: Texture2D, centro: Vector2, dimensao: Vector2) -> void:
 	draw_texture_rect(tex, Rect2(centro - dimensao / 2.0, dimensao), false)
 
+func retrato_personagem(tex: Texture2D, centro: Vector2, dimensao: Vector2, virar: bool) -> void:
+	var rect = Rect2(centro - dimensao / 2.0, dimensao)
+	if virar:
+		draw_set_transform(Vector2(rect.position.x + rect.size.x, rect.position.y), 0.0, Vector2(-1, 1))
+		draw_texture_rect(tex, Rect2(0, 0, rect.size.x, rect.size.y), false)
+		draw_set_transform(Vector2.ZERO)
+	else:
+		draw_texture_rect(tex, rect, false)
+
 func _draw() -> void:
 	if modo == "batalha" or (modo == "dialogo" and ao_terminar == "resgate"):
 		desenhar_batalha()
@@ -336,17 +440,20 @@ func desenhar_mundo() -> void:
 		retrato(peixeiro, POS_PEIXEIRO, Vector2(66, 89))
 	elif sala == "terreno" and not resgatou:
 		# Mingau fica escondido atrás da sucata, longe da entrada.
-		retrato(mingau, POS_MINGAU, Vector2(120, 90))
-		draw_rect(Rect2(742, 213, 101, 34), Color("7b675b"))
-		draw_rect(Rect2(737, 209, 114, 8), Color("ae9381"))
-	# A protagonista tem 4 direções e uma animação simples de caminhada.
-	var balanco = sin(passos * 2.8) * 3.0 if eixo() != Vector2.ZERO else 0.0
-	retrato(garota, posicao + Vector2(0, balanco), Vector2(55, 82))
-	var sombra = Rect2(posicao.x - 23, posicao.y + 34, 46, 7)
-	draw_rect(sombra, Color(0, 0, 0, 0.20))
-	# A seta aponta para a direção para onde a menina está olhando.
-	var inicio = posicao + Vector2(0, -50)
-	draw_line(inicio, inicio + direcao_olhar * 15.0, COR_SELECAO, 3)
+		retrato(mingau, POS_MINGAU, Vector2(52, 49))
+		# O gato fica parcialmente oculto atrás de um caixote.
+		draw_rect(Rect2(812, 369, 73, 17), Color("786757"))
+		draw_rect(Rect2(805, 363, 86, 7), Color("b69b7b"))
+	# A animação indica passos e uma pose diferente ao olhar para cada lado.
+	var em_movimento = personagem_fisico.velocity.length() > 0.1
+	var balanco = sin(animacao_personagem) * 2.0 if em_movimento else 0.0
+	var sprite = garota
+	if direcao_olhar.y < -0.45:
+		sprite = garota_costas
+	elif direcao_olhar.x < -0.45 or direcao_olhar.x > 0.45:
+		sprite = garota_lado
+	var espelhar = direcao_olhar.x < -0.45
+	retrato_personagem(sprite, posicao + Vector2(0, balanco), Vector2(49, 71), espelhar)
 	# Portais discretos nas bordas do mapa.
 	var destinos: Dictionary = salas[sala]
 	if destinos.has("esquerda"):
@@ -389,7 +496,7 @@ func quebrar(frase: String, limite: int) -> Array[String]:
 func desenhar_batalha() -> void:
 	draw_texture_rect(terreno, Rect2(0, 0, 960, 540), false)
 	draw_rect(Rect2(0, 266, 960, 274), Color("332834"))
-	retrato(mingau, Vector2(480, 143), Vector2(151, 114))
+	retrato(mingau, Vector2(480, 142), Vector2(192, 175))
 	escrever("MINGAU", 39, 43, 26, COR_SELECAO)
 	escrever("Confiança: " + str(confianca) + "/2", 719, 43, 19, COR_VERDE)
 	caixa(Rect2(34, 205, 892, 79))
