@@ -17,10 +17,30 @@ var peixeiro: Texture2D = preload("res://assets/peixeiro.svg")
 var mingau: Texture2D = preload("res://assets/mingau.svg")
 var filhotes: Texture2D = preload("res://assets/filhotes.svg")
 
-var posicao = Vector2(480, 435)
-const POS_MARIA = Vector2(415, 340)
-const POS_PEIXEIRO = Vector2(187, 343)
-const POS_MINGAU = Vector2(789, 355)
+# Cada cena é uma área separada. Use as saídas nas bordas para viajar.
+var sala = "rua"
+var posicao = Vector2(480, 392)
+var direcao_olhar = Vector2(0, 1)
+var passos = 0.0
+const POS_MARIA = Vector2(490, 290)
+const POS_PEIXEIRO = Vector2(479, 314)
+const POS_MINGAU = Vector2(760, 175)
+var salas: Dictionary = {
+	"rua": {"nome": "Rua das Acácias", "esquerda": "praca", "direita": "viela", "cima": "peixaria"},
+	"praca": {"nome": "Praça da Figueira", "direita": "rua", "cima": "casa"},
+	"casa": {"nome": "Casa da Dona Maria", "baixo": "praca"},
+	"peixaria": {"nome": "Peixaria do Zé", "baixo": "rua"},
+	"viela": {"nome": "Viela do Campinho", "esquerda": "rua", "direita": "terreno"},
+	"terreno": {"nome": "Terreno baldio", "esquerda": "viela"}
+}
+var fotos: Dictionary = {
+	"rua": preload("res://assets/maps/rua.svg"),
+	"praca": preload("res://assets/maps/praca.svg"),
+	"casa": preload("res://assets/maps/casa.svg"),
+	"peixaria": preload("res://assets/maps/peixaria.svg"),
+	"viela": preload("res://assets/maps/viela.svg"),
+	"terreno": preload("res://assets/maps/terreno.svg")
+}
 var modo = "mundo"
 var falas: Array = []
 var fala_indice = 0
@@ -63,9 +83,14 @@ func eixo() -> Vector2:
 
 func _process(delta: float) -> void:
 	if modo == "mundo" and not caderno:
-		posicao += eixo() * 175.0 * delta
-		posicao.x = clampf(posicao.x, 30.0, 930.0)
-		posicao.y = clampf(posicao.y, 315.0, 487.0)
+		var d = eixo()
+		if d != Vector2.ZERO:
+			direcao_olhar = d
+			passos += delta * 9.0
+		posicao += d * 192.0 * delta
+		transicao_portas()
+		posicao.x = clampf(posicao.x, 36.0, 924.0)
+		posicao.y = clampf(posicao.y, 111.0, 464.0)
 	elif modo == "batalha" and fase == "esquiva":
 		processar_esquiva(delta)
 	queue_redraw()
@@ -102,9 +127,28 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			if codigo in [KEY_ENTER, KEY_KP_ENTER, KEY_SPACE, KEY_Z]:
 				comando()
 
+func transicao_portas() -> void:
+	var destinos: Dictionary = salas[sala]
+	if posicao.x < 37.0 and destinos.has("esquerda"):
+		sala = destinos["esquerda"]
+		posicao = Vector2(894, posicao.y)
+		aviso = "Você entrou em " + salas[sala]["nome"] + "."
+	elif posicao.x > 923.0 and destinos.has("direita"):
+		sala = destinos["direita"]
+		posicao = Vector2(65, posicao.y)
+		aviso = "Você entrou em " + salas[sala]["nome"] + "."
+	elif posicao.y < 112.0 and destinos.has("cima") and posicao.x > 340 and posicao.x < 620:
+		sala = destinos["cima"]
+		posicao = Vector2(480, 426)
+		aviso = "Você entrou em " + salas[sala]["nome"] + "."
+	elif posicao.y > 463.0 and destinos.has("baixo") and posicao.x > 340 and posicao.x < 620:
+		sala = destinos["baixo"]
+		posicao = Vector2(480, 141)
+		aviso = "Você entrou em " + salas[sala]["nome"] + "."
+
 func interagir() -> void:
-	if posicao.distance_to(POS_MARIA) < 89.0:
-		if resgatou:
+	if sala == "casa" and posicao.distance_to(POS_MARIA) < 100.0:
+		if resgatou and not concluiu:
 			dialogo([
 				"Dona Maria: Você trouxe Mingau... e três filhotinhos?!",
 				"Dona Maria: Vou cuidar de todos. Muito obrigada!",
@@ -112,35 +156,37 @@ func interagir() -> void:
 				"Dona Maria: Ontem passou uma pessoa procurando uma menina igualzinha a você...",
 				"Garota: Quem será que estava me procurando?"
 			], "final")
+		elif concluiu:
+			dialogo(["Dona Maria: Vai com cuidado, minha filha! Boa sorte!" ], "")
 		elif not missao:
 			dialogo([
 				"Garota: Oi! A senhora sabe como chego ao meu bairro?",
 				"Dona Maria: Conheço sim, menina, mas faz um favor pra mim?",
-				"Dona Maria: Meu gato Mingau fugiu para o terreno vazio.",
+				"Dona Maria: Meu gato Mingau fugiu para um terreno do bairro.",
 				"Dona Maria: Traz ele de volta que te conto o caminho!"
 			], "missao")
 		else:
-			dialogo(["Dona Maria: Mingau está naquele terreno. O bichinho deve estar com fome."], "")
-	elif posicao.distance_to(POS_PEIXEIRO) < 87.0:
+			dialogo(["Dona Maria: O bichinho se escondeu num terreno depois da viela. Deve estar com fome."], "")
+	elif sala == "peixaria" and posicao.distance_to(POS_PEIXEIRO) < 110.0:
 		if not missao:
-			dialogo(["Peixeiro: Bom dia! Peixe fresquinho, direto do mercado!"], "")
+			dialogo(["Seu Zé: Bom dia! Peixe fresquinho!"], "")
 		elif peixe:
-			dialogo(["Peixeiro: Boa sorte com o gato, menina!"], "")
+			dialogo(["Seu Zé: Boa sorte com o gato, menina!"], "")
 		elif peixe_dado:
-			dialogo(["Peixeiro: Espero que o Mingau já esteja calminho."], "")
+			dialogo(["Seu Zé: Espero que o Mingau esteja calminho."], "")
 		else:
 			dialogo([
 				"Garota: Moço, arruma um peixe pra um gato assustado?",
-				"Peixeiro: Pra ajudar um bichinho? Leva esse aqui!",
+				"Seu Zé: Pra ajudar um bichinho? Leva esse aqui!",
 				"Garota: Valeu! Vou procurar o Mingau."
 			], "peixe")
-	elif posicao.distance_to(POS_MINGAU) < 101.0 and not resgatou:
+	elif sala == "terreno" and posicao.distance_to(POS_MINGAU) < 93.0 and not resgatou:
 		if not missao:
 			dialogo(["* Um gato laranja encara você e se afasta."], "")
 		else:
 			comecar_batalha()
 	else:
-		aviso = "Não tem ninguém por perto. Explore o bairro!"
+		aviso = "Explore o bairro! Fale com moradores usando E."
 
 func dialogo(textos: Array, acao: String) -> void:
 	falas = textos
@@ -278,24 +324,46 @@ func objetivo() -> String:
 	if resgatou:
 		return "Objetivo: devolver Mingau e os filhotes à Dona Maria."
 	if not missao:
-		return "Objetivo: fale com Dona Maria, perto da casa azul."
+		return "Objetivo: encontre Dona Maria na casa acima da praça."
 	if peixe or peixe_dado:
-		return "Objetivo: encontre Mingau no terreno à direita."
-	return "Objetivo: pegue um peixe com o peixeiro, à esquerda."
+		return "Objetivo: procure Mingau no terreno depois da viela."
+	return "Objetivo: procure a peixaria na parte alta da rua."
 
 func desenhar_mundo() -> void:
-	draw_texture_rect(bairro, Rect2(0, 0, 960, 540), false)
-	if not resgatou:
-		retrato(mingau, POS_MINGAU, Vector2(82, 65))
-	retrato(maria, POS_MARIA, Vector2(61, 85))
-	retrato(peixeiro, POS_PEIXEIRO, Vector2(61, 85))
-	retrato(garota, posicao, Vector2(58, 83))
-	caixa(Rect2(15, 10, 930, 81), Color("3b2a35"), Color("ffe1ab"))
-	escrever("CAMINHO DE CASA", 31, 42, 24, COR_SELECAO)
-	escrever(objetivo(), 31, 71, 16)
-	escrever("PEIXE: " + ("1" if peixe else "0"), 790, 42, 18, COR_SELECAO)
-	caixa(Rect2(17, 486, 926, 44))
-	escrever(aviso, 34, 515, 17)
+	draw_texture_rect(fotos[sala], Rect2(0, 0, 960, 540), false)
+	if sala == "casa":
+		retrato(maria, POS_MARIA, Vector2(69, 92))
+	elif sala == "peixaria":
+		retrato(peixeiro, POS_PEIXEIRO, Vector2(66, 89))
+	elif sala == "terreno" and not resgatou:
+		# Mingau fica escondido atrás da sucata, longe da entrada.
+		retrato(mingau, POS_MINGAU, Vector2(120, 90))
+		draw_rect(Rect2(742, 213, 101, 34), Color("7b675b"))
+		draw_rect(Rect2(737, 209, 114, 8), Color("ae9381"))
+	# A protagonista tem 4 direções e uma animação simples de caminhada.
+	var balanco = sin(passos * 2.8) * 3.0 if eixo() != Vector2.ZERO else 0.0
+	retrato(garota, posicao + Vector2(0, balanco), Vector2(55, 82))
+	var sombra = Rect2(posicao.x - 23, posicao.y + 34, 46, 7)
+	draw_rect(sombra, Color(0, 0, 0, 0.20))
+	# A seta aponta para a direção para onde a menina está olhando.
+	var inicio = posicao + Vector2(0, -50)
+	draw_line(inicio, inicio + direcao_olhar * 15.0, COR_SELECAO, 3)
+	# Portais discretos nas bordas do mapa.
+	var destinos: Dictionary = salas[sala]
+	if destinos.has("esquerda"):
+		draw_rect(Rect2(0, 250, 12, 70), Color("ffcf79"))
+	if destinos.has("direita"):
+		draw_rect(Rect2(948, 250, 12, 70), Color("ffcf79"))
+	if destinos.has("cima"):
+		draw_rect(Rect2(390, 94, 180, 12), Color("ffcf79"))
+	if destinos.has("baixo"):
+		draw_rect(Rect2(390, 468, 180, 11), Color("ffcf79"))
+	caixa(Rect2(12, 8, 936, 78), Color("3b2a35"), Color("ffe1ab"))
+	escrever(salas[sala]["nome"].to_upper(), 26, 36, 23, COR_SELECAO)
+	escrever(objetivo(), 26, 65, 16)
+	escrever("PEIXE: " + ("1" if peixe else "0"), 790, 35, 18, COR_SELECAO)
+	caixa(Rect2(15, 484, 930, 46), Color("3b2a35"), Color("ffe1ab"))
+	escrever(aviso, 30, 514, 17)
 
 func desenhar_dialogo() -> void:
 	draw_rect(Rect2(0, 0, 960, 540), Color(0, 0, 0, 0.32))
