@@ -27,8 +27,7 @@ const POS_PEIXEIRO = Vector2(479, 314)
 const POS_MINGAU = Vector2(760, 175)
 var salas: Dictionary = {
 	"rua": {"nome": "Rua das Acácias", "esquerda": "praca", "direita": "viela", "cima": "peixaria"},
-	"praca": {"nome": "Praça da Figueira", "direita": "rua", "cima": "casa"},
-	"casa": {"nome": "Casa da Dona Maria", "baixo": "praca"},
+	"praca": {"nome": "Praça da Figueira", "direita": "rua"},
 	"peixaria": {"nome": "Peixaria do Zé", "baixo": "rua"},
 	"viela": {"nome": "Viela do Campinho", "esquerda": "rua", "direita": "terreno"},
 	"terreno": {"nome": "Terreno baldio", "esquerda": "viela"}
@@ -36,7 +35,6 @@ var salas: Dictionary = {
 var fotos: Dictionary = {
 	"rua": preload("res://assets/maps/rua.svg"),
 	"praca": preload("res://assets/maps/praca.svg"),
-	"casa": preload("res://assets/maps/casa.svg"),
 	"peixaria": preload("res://assets/maps/peixaria.svg"),
 	"viela": preload("res://assets/maps/viela.svg"),
 	"terreno": preload("res://assets/maps/terreno.svg")
@@ -147,7 +145,7 @@ func transicao_portas() -> void:
 		aviso = "Você entrou em " + salas[sala]["nome"] + "."
 
 func interagir() -> void:
-	if sala == "casa" and posicao.distance_to(POS_MARIA) < 100.0:
+	if sala == "praca" and posicao.distance_to(POS_MARIA) < 112.0:
 		if resgatou and not concluiu:
 			dialogo([
 				"Dona Maria: Você trouxe Mingau... e três filhotinhos?!",
@@ -324,15 +322,16 @@ func objetivo() -> String:
 	if resgatou:
 		return "Objetivo: devolver Mingau e os filhotes à Dona Maria."
 	if not missao:
-		return "Objetivo: encontre Dona Maria na casa acima da praça."
+		return "Objetivo: encontre Dona Maria sentada na praça, alimentando pombos."
 	if peixe or peixe_dado:
 		return "Objetivo: procure Mingau no terreno depois da viela."
 	return "Objetivo: procure a peixaria na parte alta da rua."
 
 func desenhar_mundo() -> void:
 	draw_texture_rect(fotos[sala], Rect2(0, 0, 960, 540), false)
-	if sala == "casa":
-		retrato(maria, POS_MARIA, Vector2(69, 92))
+	if sala == "praca":
+		# Dona Maria fica sentada no banco da praça, alimentando os pombos.
+		retrato(maria, Vector2(484, 291), Vector2(59, 69))
 	elif sala == "peixaria":
 		retrato(peixeiro, POS_PEIXEIRO, Vector2(66, 89))
 	elif sala == "terreno" and not resgatou:
