@@ -1,4 +1,4 @@
-# Caminho de Casa 🇧🇷 — Protótipo 0.5
+# Caminho de Casa 🇧🇷 — Protótipo 0.6
 
 RPG 2D brasileiro sobre uma garota perdida que tenta voltar para casa. A primeira missão é ajudar Dona Maria, sentada na praça dando comida aos pombos, a resgatar Mingau e seus três filhotes.
 
@@ -55,7 +55,7 @@ Nesta revisão foram corrigidos problemas de transição, colocada uma entrada i
 
 O projeto usa mecânicas gerais de RPG com escolha e esquiva, mas seus personagens, história e arte devem ser originais.
 
-## Atualização visual 0.5 — retrô brasileiro
+## Atualização visual 0.6 — retrô brasileiro
 
 - Os cinco mapas foram redesenhados com **grandes áreas de cor sólida**, estilo RPG retrô minimalista.
 - Removidos os pontinhos e texturas aleatórias que poluíam as ruas, a praça e o terreno.
@@ -65,3 +65,14 @@ O projeto usa mecânicas gerais de RPG com escolha e esquiva, mas seus personage
 - Ambientação continua brasileira e todos os gráficos são próprios; nenhuma imagem de Undertale foi copiada.
 
 **Teste importante:** baixe um ZIP novo, extraia em pasta nova e reimporte `project.godot`. Esta revisão não foi executada no editor Godot neste ambiente.
+
+## Revisão 0.6 — sprites, profundidade, interface e testes
+
+- Visitante no mapa agora tem sprite da mesma grade e proporção dos NPCs; o retrato original aparece na conversa.
+- Personagens recebem sombras, posição de desenho arredondada e ordem por profundidade.
+- Trocas de áreas têm fade curto. Na batalha, bolas de lã substituem círculos suaves e há barra de vida.
+- Colisores de objetos e do visitante revisados.
+- Ajustes de janela em proporção 16:9 e filtragem nearest para preservar a arte ao redimensionar.
+- O repositório ganhou um roteiro automático em `tests/smoke.gd` e workflow do GitHub Actions. O resultado deve ser conferido na aba Actions.
+
+**Importante:** ainda é uma versão de protótipo e pode precisar de correções após teste real na Godot. Leia `docs/REVISAO_VISUAL_06.md`.

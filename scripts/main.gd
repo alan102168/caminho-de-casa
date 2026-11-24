@@ -1,6 +1,6 @@
 extends Node2D
 
-# Caminho de Casa - Protótipo 0.5
+# Caminho de Casa - Protótipo 0.6
 # Todo o protótipo é desenhado e controlado por este script.
 const AREA = Rect2(278, 325, 404, 114)
 const COR_TEXTO = Color("f2e3c6")
@@ -22,7 +22,9 @@ var peixeiro: Texture2D = preload("res://assets/pixel/seu_ze.svg")
 var mingau: Texture2D = preload("res://assets/pixel/mingau.svg")
 var pombo: Texture2D = preload("res://assets/pixel/pombo.svg")
 # Personagem novo enviado pelo criador do jogo (sprite PNG transparente).
-var visitante: Texture2D = preload("res://assets/pixel/visitante.png")
+var visitante: Texture2D = preload("res://assets/pixel/visitante_mapa.svg")
+# Retrato original de referência do personagem, guardado como arte de diálogo.
+var visitante_retrato: Texture2D = preload("res://assets/pixel/visitante.png")
 var filhotes: Texture2D = preload("res://assets/pixel/filhotes.svg")
 
 # Cada cena é uma área separada. Use as saídas nas bordas para viajar.
@@ -34,6 +36,7 @@ var personagem_fisico: CharacterBody2D
 var obstaculos: Array[StaticBody2D] = []
 var animacao_personagem = 0.0
 var tempo_visual = 0.0
+var transicao_opacidade = 0.0
 var atraso_saida = 0.0
 var mingau_encontrado = false
 const ENTRADA_PEIXARIA = Vector2(476, 279)
@@ -114,23 +117,23 @@ func criar_colisoes_da_sala() -> void:
 	match sala:
 		"rua":
 			areas = [
-				Rect2(67, 110, 284, 150), # casa à esquerda
-				Rect2(357, 140, 175, 122), # construção ao centro
-				Rect2(611, 118, 288, 145), # casa à direita
-				Rect2(900, 94, 48, 139) # muro lateral
+				Rect2(29, 71, 298, 205), # casa à esquerda
+				Rect2(340, 87, 246, 181), # peixaria, com porta acessível pela frente
+				Rect2(603, 68, 326, 207), # casa à direita
+				Rect2(POS_VISITANTE.x - 14.0, POS_VISITANTE.y + 9.0, 28, 19) # NPC visitante
 			]
 		"praca":
 			areas = [
-				Rect2(38, 113, 268, 144),
-				Rect2(639, 119, 265, 146),
-				Rect2(389, 274, 191, 76), # banco de Dona Maria
-				Rect2(298, 229, 33, 65), # árvore esquerda
-				Rect2(605, 229, 33, 64) # árvore direita
+				Rect2(29, 70, 278, 194),
+				Rect2(644, 73, 286, 194),
+				Rect2(378, 267, 210, 94), # banco de Dona Maria
+				Rect2(294, 220, 43, 74), # tronco esquerdo
+				Rect2(601, 220, 42, 73) # tronco direito
 			]
 		"peixaria":
 			areas = [
 				Rect2(48, 106, 866, 159),
-				Rect2(345, 277, 271, 68), # balcão
+				Rect2(327, 269, 297, 88), # balcão
 				Rect2(96, 148, 30, 77),
 				Rect2(834, 146, 33, 84)
 			]
@@ -199,6 +202,7 @@ func eixo() -> Vector2:
 
 func _process(delta: float) -> void:
 	tempo_visual += delta
+	transicao_opacidade = maxf(0.0, transicao_opacidade - delta * 3.7)
 	if modo == "mundo" and sala == "terreno" and missao and not resgatou and not mingau_encontrado:
 		if posicao.distance_to(POS_MINGAU) < 176.0:
 			mingau_encontrado = true
@@ -240,6 +244,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 				comando()
 
 func mudar_area(proxima: String, entrada: Vector2) -> void:
+	transicao_opacidade = 0.78
 	sala = proxima
 	posicao = entrada
 	personagem_fisico.position = entrada
@@ -434,10 +439,27 @@ func caixa(area: Rect2, fundo: Color = COR_FUNDO, borda: Color = COR_BORDA) -> v
 	draw_rect(area, borda, false, 3.0)
 
 func retrato(tex: Texture2D, centro: Vector2, dimensao: Vector2) -> void:
-	draw_texture_rect(tex, Rect2(centro - dimensao / 2.0, dimensao), false)
+	# Posição arredondada: as bordas dos sprites não tremem ao andar.
+	var pos = (centro - dimensao / 2.0).round()
+	draw_texture_rect(tex, Rect2(pos, dimensao), false)
+
+func sombra_de_pe(centro: Vector2, tamanho: float = 36.0) -> void:
+	# Uma pequena sombra em blocos, sem borrão nem filtros.
+	var ret = Rect2((centro + Vector2(-tamanho / 2.0, 29.0)).round(), Vector2(tamanho, 5))
+	draw_rect(ret, Color(0.10, 0.09, 0.13, 0.24))
+	draw_rect(Rect2(ret.position + Vector2(5, 2), ret.size - Vector2(10, 2)), Color(0.10, 0.09, 0.13, 0.14))
+
+func desenhar_novelo(p: Vector2) -> void:
+	var x: float = roundf(p.x)
+	var y: float = roundf(p.y)
+	draw_rect(Rect2(x - 7, y - 6, 14, 12), Color("5b4553"))
+	draw_rect(Rect2(x - 5, y - 5, 10, 10), Color("f0d4a4"))
+	draw_rect(Rect2(x - 4, y - 1, 8, 2), Color("be946d"))
+	draw_rect(Rect2(x - 1, y - 4, 2, 8), Color("be946d"))
+	draw_rect(Rect2(x - 8, y + 4, 4, 2), Color("f0d4a4"))
 
 func retrato_personagem(tex: Texture2D, centro: Vector2, dimensao: Vector2, virar: bool) -> void:
-	var rect = Rect2(centro - dimensao / 2.0, dimensao)
+	var rect = Rect2((centro - dimensao / 2.0).round(), dimensao)
 	if virar:
 		draw_set_transform(Vector2(rect.position.x + rect.size.x, rect.position.y), 0.0, Vector2(-1, 1))
 		draw_texture_rect(tex, Rect2(0, 0, rect.size.x, rect.size.y), false)
@@ -454,6 +476,8 @@ func _draw() -> void:
 		desenhar_dialogo()
 	if modo == "mundo" and caderno:
 		desenhar_caderno()
+	if transicao_opacidade > 0.0 and modo == "mundo":
+		draw_rect(Rect2(0, 0, 960, 540), Color(0.12, 0.11, 0.16, transicao_opacidade))
 
 func objetivo() -> String:
 	if concluiu:
@@ -466,47 +490,68 @@ func objetivo() -> String:
 		return "Objetivo: procure Mingau no terreno depois da viela."
 	return "Objetivo: procure a peixaria na parte alta da rua."
 
-func desenhar_mundo() -> void:
-	# Fundos redesenhados com blocos maiores e sem texturas de pontos aleatórios.
-	draw_texture_rect(fotos[sala], Rect2(0, 0, 960, 540), false)
+func desenhar_npc_da_sala(depois_da_jogadora: bool) -> void:
+	# Os personagens com pés mais abaixo na tela aparecem à frente.
 	if sala == "rua":
-		retrato(visitante, POS_VISITANTE, Vector2(48, 74))
-		if posicao.distance_to(POS_VISITANTE) < 100.0:
-			escrever("E: conversar", 695, 286, 16, COR_SELECAO)
-	if sala == "praca":
-		# Dona Maria sentada no banco da praça; pombos se movimentam perto da comida.
-		retrato(maria, Vector2(489, 285), Vector2(47, 55))
-		for i in range(4):
-			var p = Vector2(355 + i * 66, 384 + int(sin(tempo_visual * 2.5 + i * 3) * 4))
-			retrato(pombo, p, Vector2(27, 21))
+		if (POS_VISITANTE.y > posicao.y) == depois_da_jogadora:
+			sombra_de_pe(POS_VISITANTE, 38.0)
+			retrato(visitante, POS_VISITANTE + Vector2(0, -4), Vector2(48, 72))
+	elif sala == "praca":
+		if (POS_MARIA.y > posicao.y) == depois_da_jogadora:
+			sombra_de_pe(POS_MARIA, 35.0)
+			retrato(maria, Vector2(489, 285), Vector2(52, 66))
 	elif sala == "peixaria":
-		retrato(peixeiro, POS_PEIXEIRO, Vector2(48, 64))
+		if (POS_PEIXEIRO.y > posicao.y) == depois_da_jogadora:
+			sombra_de_pe(POS_PEIXEIRO, 36.0)
+			retrato(peixeiro, POS_PEIXEIRO, Vector2(50, 68))
 	elif sala == "terreno" and not resgatou and mingau_encontrado:
-		# Gato pequeno e parcialmente escondido: o jogador precisa chegar até ele.
-		retrato(mingau, POS_MINGAU, Vector2(51, 37))
-		draw_rect(Rect2(809, 370, 76, 14), Color("796755"))
-		draw_rect(Rect2(805, 366, 82, 5), Color("b59b79"))
-	# A animação indica passos e uma pose diferente ao olhar para cada lado.
-	var andando = personagem_fisico.velocity.length() > 0.1 and modo == "mundo"
-	var passo = andando and (int(animacao_personagem * 0.9) % 2 == 1)
+		if (POS_MINGAU.y > posicao.y) == depois_da_jogadora:
+			sombra_de_pe(POS_MINGAU, 40.0)
+			retrato(mingau, POS_MINGAU, Vector2(80, 58))
+			# Parte do caixote aparece na frente do gato.
+			draw_rect(Rect2(809, 371, 76, 12), Color("796755"))
+			draw_rect(Rect2(805, 368, 82, 4), Color("b59b79"))
+
+func desenhar_mundo() -> void:
+	draw_texture_rect(fotos[sala], Rect2(0, 0, 960, 540), false)
+
+	# Pequenos pombos com movimento discreto na praça, não texturas espalhadas.
+	if sala == "praca":
+		for i in range(4):
+			var pos_pombo = Vector2(355 + i * 66, 383 + roundi(sin(tempo_visual * 2.0 + i * 3) * 2.0))
+			retrato(pombo, pos_pombo, Vector2(27, 21))
+
+	desenhar_npc_da_sala(false)
+
+	var andando: bool = personagem_fisico.velocity.length() > 0.1 and modo == "mundo"
+	var passo: bool = andando and (int(animacao_personagem * 0.9) % 2 == 1)
 	var sprite: Texture2D = garota_passo if passo else garota
 	if direcao_olhar.y < -0.45:
 		sprite = garota_costas_passo if passo else garota_costas
 	elif absf(direcao_olhar.x) > 0.45:
 		sprite = garota_lado_passo if passo else garota_lado
-	var espelhar = direcao_olhar.x < -0.45
-	retrato_personagem(sprite, posicao + Vector2(0, -7), Vector2(51, 76), espelhar)
-	# Portais discretos nas bordas do mapa.
+	var espelhar: bool = direcao_olhar.x < -0.45
+	sombra_de_pe(posicao, 34.0)
+	retrato_personagem(sprite, posicao + Vector2(0, -6), Vector2(48, 72), espelhar)
+
+	desenhar_npc_da_sala(true)
+
+	# Sinais de exploração só aparecem perto de pontos interativos.
+	if sala == "rua":
+		if posicao.distance_to(POS_VISITANTE) < 100.0:
+			escrever("E: conversar", 693, 286, 16, COR_SELECAO)
+		if posicao.distance_to(ENTRADA_PEIXARIA) < 135.0:
+			escrever("E: peixaria", 387, 302, 17, COR_SELECAO)
+	elif sala == "peixaria":
+		escrever("SAIDA", 429, 453, 18, COR_SELECAO)
+
 	var destinos: Dictionary = salas[sala]
 	if destinos.has("esquerda"):
 		escrever("<", 8, 406, 26, COR_SELECAO)
 	if destinos.has("direita"):
 		escrever(">", 931, 406, 26, COR_SELECAO)
-	if sala == "rua" and posicao.distance_to(ENTRADA_PEIXARIA) < 135.0:
-		escrever("E: entrar na peixaria", 370, 302, 17, COR_SELECAO)
-	if sala == "peixaria":
-		escrever("SAÍDA", 429, 453, 18, COR_SELECAO)
-	# UI enxuta: menos caixas, deixando o mapa visível.
+
+	# Barra de informações reduzida e com bom contraste.
 	caixa(Rect2(12, 8, 936, 67), Color("302e3e"), Color("bca68b"))
 	escrever(salas[sala]["nome"].to_upper(), 26, 34, 22, COR_SELECAO)
 	escrever(objetivo(), 26, 61, 16)
@@ -517,10 +562,19 @@ func desenhar_mundo() -> void:
 func desenhar_dialogo() -> void:
 	draw_rect(Rect2(0, 0, 960, 540), Color(0, 0, 0, 0.32))
 	caixa(Rect2(44, 358, 872, 160), Color("302e3e"), Color("e2cfad"))
-	var texto_atual = falas[mini(fala_indice, falas.size() - 1)]
-	var linhas = quebrar(texto_atual, 70)
+	var texto_atual: String = str(falas[mini(fala_indice, falas.size() - 1)])
+	var fala_visitante: bool = texto_atual.begins_with("Visitante:")
+	var x_texto = 67.0
+	var limite = 70
+	if fala_visitante:
+		# Retrato detalhado original só aparece no diálogo, não no mapa.
+		draw_rect(Rect2(62, 382, 105, 116), Color("4c3b4f"))
+		retrato(visitante_retrato, Vector2(114, 438), Vector2(77, 110))
+		x_texto = 182.0
+		limite = 58
+	var linhas = quebrar(texto_atual, limite)
 	for i in range(mini(3, linhas.size())):
-		escrever(linhas[i], 67, 399 + 30 * i, 20)
+		escrever(linhas[i], x_texto, 399 + 30 * i, 19)
 	escrever("ENTER / ESPAÇO para continuar  >", 607, 499, 15, COR_SELECAO)
 
 func quebrar(frase: String, limite: int) -> Array[String]:
@@ -540,7 +594,9 @@ func desenhar_batalha() -> void:
 	draw_texture_rect(fotos["terreno"], Rect2(0, 0, 960, 540), false)
 	# Batalha com composição própria: sprite em destaque e interface retro limpa.
 	draw_rect(Rect2(0, 290, 960, 250), Color("302e3e"))
-	retrato(mingau, Vector2(480, 151), Vector2(184, 137))
+	# O sprite usa escala inteira de 5x na batalha.
+	sombra_de_pe(Vector2(480, 190), 126.0)
+	retrato(mingau, Vector2(480, 148 + roundf(sin(tempo_visual * 2.0) * 2.0)), Vector2(200, 145))
 	if modo == "dialogo" and ao_terminar == "resgate" and fala_indice >= 1:
 		retrato(filhotes, Vector2(618, 203), Vector2(126, 39))
 	escrever("MINGAU", 39, 43, 26, COR_SELECAO)
@@ -552,14 +608,15 @@ func desenhar_batalha() -> void:
 	caixa(AREA, Color("252633"), Color("e2cfad"))
 	if fase == "esquiva":
 		for bola in bolinhas:
-			draw_circle(bola["pos"], 8, Color("eac48b"))
-			draw_arc(bola["pos"], 8, 0.0, TAU, 12, Color("8a634a"), 2.0)
+			desenhar_novelo(bola["pos"])
 		if invulneravel <= 0.0 or int(invulneravel * 12.0) % 2 == 0:
 			desenhar_coracao()
 		escrever("Desvie das bolinhas de lã!   " + str(maxi(0, ceili(tempo))) + "s", 318, 466, 17, COR_SELECAO)
 	else:
 		escrever("Escolha uma ação para ajudar Mingau.", 308, 377, 19)
 	escrever("PV: " + str(vida) + "/5", 42, 469, 19, COR_VERDE)
+	draw_rect(Rect2(154, 453, 115, 14), Color("554956"))
+	draw_rect(Rect2(157, 456, 109.0 * float(vida) / 5.0, 8), COR_VERDE)
 	var botoes = ["AGIR", "ITEM", "CHAMAR", "RESGATAR"]
 	for i in range(4):
 		var x = 24.0 + i * 236.0
